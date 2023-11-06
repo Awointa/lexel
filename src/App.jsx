@@ -1,18 +1,18 @@
 import { useEffect, useState, useRef } from "react";
 import StarRating from "./StarRating";
-import "./App.css";
 
-const KEY = "b12122de";
+import { useMovies } from "./useMovies";
+
+import "./App.css";
 
 const average = (arr) =>
 	arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
+const KEY = "b12122de";
+
 export default function App() {
 	const [query, setQuery] = useState("");
 
-	const [movies, setMovies] = useState([]);
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState("");
 	const [selectedId, setSelectedId] = useState(null);
 	const [watched, setWatched] = useState(function () {
 		const storedValue = localStorage.getItem("watched");
@@ -27,56 +27,21 @@ export default function App() {
 		setSelectedId(null);
 	}
 
-	function handleWatched(movie) {
-		console.log(movie);
+	function handleAddWatched(movie) {
 		setWatched((watched) => [...watched, movie]);
-
-		localStorage.setItem("watched", JSON.stringify([...watched, movie]));
 	}
 
 	function handleDeleteWatched(id) {
 		setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
 	}
 
-	// useEffect(function () {}, [watched]);
+	const { movies, isLoading, error } = useMovies(query);
 
-	// l;
 	useEffect(
 		function () {
-			const controller = new AbortController();
-			async function fetchMovies() {
-				try {
-					setIsLoading(true);
-					setError("");
-					const res = await fetch(
-						`http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
-						{ signal: controller.signal },
-					);
-					if (!res.ok)
-						throw new Error("Something went wrong can't show movies");
-					const data = await res.json();
-					if (data.response === "False") throw new Error("Movie not found");
-
-					setMovies(data.Search);
-					setError("");
-				} catch (err) {
-					console.error(err.message);
-					if (err.name !== "AbortError") {
-						3;
-						console.log(err.message);
-						setError(err.message);
-					}
-				} finally {
-					setIsLoading(false);
-				}
-			}
-			handleCloseMovie();
-			fetchMovies();
-			return function () {
-				controller.abort();
-			};
+			localStorage.setItem("watched", JSON.stringify([]));
 		},
-		[query],
+		[watched],
 	);
 
 	return (
@@ -99,7 +64,7 @@ export default function App() {
 						<MovieDetails
 							selectedId={selectedId}
 							onCloseMovie={handleCloseMovie}
-							onAddWatched={handleWatched}
+							onAddWatched={handleAddWatched}
 							watched={watched}
 						/>
 					) : (
