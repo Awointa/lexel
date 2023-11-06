@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from "react";
-import StarRating from "./StarRating";
-
 import { useMovies } from "./useMovies";
+import { useLocalStorageState } from "./useLocalStorageState";
 
+import StarRating from "./StarRating";
 import "./App.css";
 
 const average = (arr) =>
@@ -14,10 +14,7 @@ export default function App() {
 	const [query, setQuery] = useState("");
 
 	const [selectedId, setSelectedId] = useState(null);
-	const [watched, setWatched] = useState(function () {
-		const storedValue = localStorage.getItem("watched");
-		return JSON.parse(storedValue);
-	});
+	const [watched, setWatched] = useLocalStorageState([], "watched");
 
 	function handleSelectMovie(id) {
 		setSelectedId((selectedId) => (selectedId == id ? null : id));
@@ -36,13 +33,6 @@ export default function App() {
 	}
 
 	const { movies, isLoading, error } = useMovies(query);
-
-	useEffect(
-		function () {
-			localStorage.setItem("watched", JSON.stringify([]));
-		},
-		[watched],
-	);
 
 	return (
 		<>
@@ -300,7 +290,6 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
 				<>
 					<header>
 						{" "}
-						ththe mo
 						<button className="btn-back" onClick={onCloseMovie}>
 							&larr;
 						</button>{" "}
